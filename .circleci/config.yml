@@ -34,10 +34,9 @@ jobs:
     working_directory: *project_dir
     steps:
       - checkout
-      - aws-s3/sync:
+      - aws-s3/copy:
           from: index.html
           to: *bucket_name
-          overwrite: true
 
 workflows:
   version: 2.1
