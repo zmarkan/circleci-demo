@@ -1,7 +1,7 @@
 # Author: @mvxt
 aliases:
   - &project_dir "~/circleci-se-challenge"
-  - &bucket_name "circleci-se-challenge"
+  - &bucket_name "s3://circleci-se-challenge"
 
 version: 2.1
 orbs:
