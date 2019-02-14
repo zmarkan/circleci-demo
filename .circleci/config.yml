@@ -1,6 +1,6 @@
 # Author: @mvxt
 aliases:
-  - &project_dir "circleci-se-challenge"
+  - &project_dir "~/circleci-se-challenge"
   - &bucket_name "circleci-se-challenge"
 
 version: 2.1
@@ -44,6 +44,12 @@ workflows:
   build-deploy:
     jobs:
       - test
+      - approve_deploy:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
       - deploy:
           context: orpheus-prod
           requires:
@@ -51,3 +57,4 @@ workflows:
           filters:
             branches:
               only: master
+
