@@ -1,0 +1,45 @@
+# Author: @mvxt
+aliases:
+  - &project_dir "circleci-se-challenge"
+  - &bucket_name "circleci-se-challenge"
+
+version: 2.1
+orbs:
+  aws-s3: circleci/aws-s3@1.0.3
+
+jobs:
+  test:
+    docker:
+      - image: circleci/node:10.15.1-browsers
+    working_directory: *project_dir
+    steps:
+      - checkout
+      - run:
+          name: Install deps
+          command: yarn
+      - run:
+          name: Run TestCafe tests
+          command: yarn test
+  deploy:
+    docker:
+      - image: circleci/python:2.7
+    working_directory: *project_dir
+    steps:
+      - checkout
+      - aws-s3/sync:
+          from: index.html
+          to: *bucket_name
+          overwrite: true
+
+workflows:
+  version: 2.1
+  build-deploy:
+    jobs:
+      - test
+      - deploy:
+          context: orpheus-prod
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
