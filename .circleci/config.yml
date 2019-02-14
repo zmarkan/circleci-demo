@@ -54,7 +54,7 @@ workflows:
       - deploy:
           context: orpheus-prod
           requires:
-            - test
+            - approve_deploy
           filters:
             branches:
               only: master
