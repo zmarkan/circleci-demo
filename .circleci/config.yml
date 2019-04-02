@@ -12,6 +12,7 @@ jobs:
     docker:
       - image: circleci/node:10.15.1-browsers
     working_directory: *project_dir
+    parallelism: 2
     steps:
       - checkout
       - restore_cache:
@@ -26,8 +27,10 @@ jobs:
           paths:
             - node_modules
       - run:
-          name: Run TestCafe tests
-          command: yarn test
+          name: Split TestCafe tests between containers and run them 
+          command: |
+            TESTFILES=$(circleci tests split < test)
+            yarn test ${TESTFILES}
       - store_test_results:
           path: /tmp/test-results
       - store_artifacts:
