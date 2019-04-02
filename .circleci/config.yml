@@ -31,7 +31,7 @@ jobs:
           command: |
             TESTFILES=$(circleci tests glob test/* | circleci tests split --total=2)
             echo "Testing $TESTFILES on this container"
-            nvm testcafe \"chrome:headless\",\"firefox:headless\" ${TESTFILES} -r xunit:/tmp/test-results/results.xml
+            yarn runTests -- ${TESTFILES}
       - store_test_results:
           path: /tmp/test-results
       - store_artifacts:
