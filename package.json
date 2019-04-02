@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Simple Node.js website to demonstrate CircleCI capabilities",
   "scripts": {
-    "test": "testcafe \"chrome:headless\",\"firefox:headless\" test/*"
+    "test": "testcafe \"chrome:headless\",\"firefox:headless\" test/* -r xunit:/tmp/test-results/results.xml"
   },
   "repository": {
     "type": "git",
