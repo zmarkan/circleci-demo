@@ -4,6 +4,7 @@
   "description": "Simple Node.js website to demonstrate CircleCI capabilities",
   "scripts": {
     "test": "testcafe \"chrome:headless\",\"firefox:headless\" test/* -r xunit:/tmp/test-results/results.xml"
+    "runTests": "testcafe \"chrome:headless\",\"firefox:headless\" -r xunit:/tmp/test-results/results.xml"
   },
   "repository": {
     "type": "git",
