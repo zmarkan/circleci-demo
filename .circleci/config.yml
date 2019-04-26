@@ -81,7 +81,7 @@ jobs:
       - run:
           name: Split TestCafe tests between containers and run them 
           command: |
-            TESTFILES=$(test/*)
+            TESTFILES=$(ls test/*)
             echo "Testing $TESTFILES on this container"
             yarn runTests -- ${TESTFILES}
       - store_test_results:
