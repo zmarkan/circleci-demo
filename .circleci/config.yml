@@ -6,9 +6,13 @@
 aliases:
   - &project_dir "~/circleci-se-challenge"
   - &bucket_name "s3://circleci-se-challenge"
+  - &container_config
+    docker:
+      - image: circleci/node:10.15.1-browsers
+    working_directory: *project_dir
 
 ##########################
-# Orb Definitions
+# Orb Inclusions
 ##########################
 orbs:
   aws-s3: circleci/aws-s3@1.0.8
@@ -24,10 +28,14 @@ workflows:
       - test_parallel:
           requires:
             - test
+      - some_other_job:
+          requires:
+            - test
       - approve_deploy:
           type: approval
           requires:
             - test_parallel
+            - some_other_job
           filters:
             branches:
               only: master
@@ -39,16 +47,24 @@ workflows:
             branches:
               only: master
 
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only: master
+
+    jobs:
+      - test_parallel
+
 ##########################
 # Job Definitions
 ##########################
 version: 2.1
 jobs:
-  test_parallel:
-    docker:
-      - image: circleci/node:10.15.1-browsers
-    working_directory: *project_dir
-    parallelism: 4
+  test:
+    <<: *container_config # See common definitions
     steps:
       - checkout
       - restore_cache:
@@ -65,7 +81,7 @@ jobs:
       - run:
           name: Split TestCafe tests between containers and run them 
           command: |
-            TESTFILES=$(circleci tests glob test/* | circleci tests split --total=4)
+            TESTFILES=$(test/*)
             echo "Testing $TESTFILES on this container"
             yarn runTests -- ${TESTFILES}
       - store_test_results:
@@ -84,9 +100,7 @@ jobs:
             - vendor
 
   test_parallel:
-    docker:
-      - image: circleci/node:10.15.1-browsers
-    working_directory: *project_dir
+    <<: *container_config # See common definitions
     parallelism: 4
     steps:
       - checkout
@@ -120,6 +134,14 @@ jobs:
             - js
             - mail
             - scss
+
+  some_other_job:
+    <<: *container_config # See common definitions
+    steps:
+      - checkout
+      - run:
+          name: Echo a message
+          command: echo "Hello World! Now you can deploy your app!"
 
   deploy:
     docker:
