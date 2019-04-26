@@ -1,12 +1,45 @@
 # Author: @mvxt
+
+##########################
+# Common Definitions
+##########################
 aliases:
   - &project_dir "~/circleci-se-challenge"
   - &bucket_name "s3://circleci-se-challenge"
 
-version: 2.1
+##########################
+# Orb Definitions
+##########################
 orbs:
-  aws-s3: circleci/aws-s3@1.0.3
+  aws-s3: circleci/aws-s3@1.0.8
 
+##########################
+# Workflow Definitions
+##########################
+workflows:
+  version: 2.1
+  build-deploy:
+    jobs:
+      - test
+      - approve_deploy:
+          type: approval
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - deploy:
+          context: orpheus-prod
+          requires:
+            - approve_deploy
+          filters:
+            branches:
+              only: master
+
+##########################
+# Job Definitions
+##########################
+version: 2.1
 jobs:
   test:
     docker:
@@ -29,40 +62,31 @@ jobs:
       - run:
           name: Split TestCafe tests between containers and run them 
           command: |
-            TESTFILES=$(circleci tests glob test/* | circleci tests split --total=2)
+            TESTFILES=$(circleci tests glob test/* | circleci tests split --total=4)
             echo "Testing $TESTFILES on this container"
             yarn runTests -- ${TESTFILES}
       - store_test_results:
           path: /tmp/test-results
       - store_artifacts:
           path: /tmp/test-results
+      - persist_to_workspace:
+          root: .
+          paths:
+            - css
+            - img
+            - index.html
+            - js
+            - mail
+            - scss
+
   deploy:
     docker:
       - image: circleci/python:2.7
     working_directory: *project_dir
     steps:
-      - checkout
-      - aws-s3/copy:
-          from: index.html
+      - attach_workspace:
+          at: .
+      - aws-s3/sync:
+          from: .
           to: *bucket_name
-
-workflows:
-  version: 2.1
-  build-deploy:
-    jobs:
-      - test
-      - approve_deploy:
-          type: approval
-          requires:
-            - test
-          filters:
-            branches:
-              only: master
-      - deploy:
-          context: orpheus-prod
-          requires:
-            - approve_deploy
-          filters:
-            branches:
-              only: master
 
