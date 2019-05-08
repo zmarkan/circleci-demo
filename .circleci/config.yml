@@ -51,7 +51,7 @@ workflows:
       - tag:
           filters:
             tags:
-              only: /stesttag*/s
+              only: '/stesttag*/s'
 
 
   nightly:
