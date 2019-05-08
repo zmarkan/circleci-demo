@@ -47,6 +47,14 @@ workflows:
             branches:
               only: master
 
+  test-tag:
+    jobs:
+      - tag:
+          filters:
+            tags:
+              only: testtag*
+
+
   nightly:
     triggers:
       - schedule:
@@ -63,6 +71,11 @@ workflows:
 ##########################
 version: 2.1
 jobs:
+  tag:
+    <<: *container_config
+    steps:
+      - run: echo "Hello tag did something"
+
   test:
     <<: *container_config # See common definitions
     steps:
