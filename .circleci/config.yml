@@ -14,7 +14,8 @@ aliases:
 # Orb Inclusions
 ##########################
 orbs:
-  aws-s3: circleci/aws-s3@1.0.8
+  aws-cli: circleci/aws-cli@0.1.13
+  aws-ecr: circleci/aws-ecr@4.0.1
 
 ##########################
 # Workflow Definitions
@@ -30,29 +31,13 @@ workflows:
       - some_other_job:
           requires:
             - test
-      - approve_deploy:
-          type: approval
+      - build_and_push:
           requires:
             - test_parallel
             - some_other_job
           filters:
             branches:
               only: master
-      - deploy:
-          context: orpheus-prod
-          requires:
-            - approve_deploy
-          filters:
-            branches:
-              only: master
-
-  test-tag:
-    jobs:
-      - tag:
-          filters:
-            tags:
-              only: '/stesttag*/s'
-
 
   nightly:
     triggers:
@@ -70,11 +55,6 @@ workflows:
 ##########################
 version: 2.1
 jobs:
-  tag:
-    <<: *container_config
-    steps:
-      - run: echo "Hello tag did something"
-
   test:
     <<: *container_config # See common definitions
     steps:
@@ -150,19 +130,24 @@ jobs:
   some_other_job:
     <<: *container_config # See common definitions
     steps:
-      - checkout
-      - run:
-          name: Echo a message
-          command: echo "Hello World! Now you can deploy your app!"
-
-  deploy:
-    docker:
-      - image: circleci/python:2.7
-    working_directory: *project_dir
-    steps:
       - attach_workspace:
           at: .
-      - aws-s3/sync:
-          from: .
-          to: *bucket_name
+      - run:
+          name: Verify that we transferred index.html over
+          command: test -f index.html
+
+  build_and_push:
+    <<: *container_config # See common definitions
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build the Docker image, tag it
+          command: docker build -t mikeyvxt/slc-devops-2019 -t mikeyvxt/slc-devops-2019:${CIRCLE_SHA1} .
+      - run:
+          name: Login to docker hub and push
+          command: |
+            echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
+            docker push mikeyvxt/slc-devops-2019
+            docker push mikeyvxt/slc-devops-2019:${CIRCLE_SHA1}
 
