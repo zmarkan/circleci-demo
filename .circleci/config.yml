@@ -156,6 +156,9 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
+          name: Tar required folders
+          command: tar -czf dirs.tar.gz css img js mail scss vendor
+      - run:
           name: Build the Docker image, tag it
           command: docker build -t mikeyvxt/slc-devops-2019 -t mikeyvxt/slc-devops-2019:${CIRCLE_SHA1} .
       - run:
