@@ -6,7 +6,8 @@
   "scripts": {
     "test": "NODE_NO_WARNINGS=1 testcafe \"chrome:headless\",\"firefox:headless\" test/**/*",
     "runTests": "NODE_NO_WARNINGS=1 testcafe \"chrome:headless\",\"firefox:headless\" -r spec,xunit:/tmp/test-results/results.xml",
-    "start": "gulp watch"
+    "start": "gulp watch",
+    "build": "docker build ."
   },
   "repository": {
     "type": "git",
