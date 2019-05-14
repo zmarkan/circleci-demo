@@ -32,6 +32,7 @@ workflows:
           requires:
             - test
       - build_and_push:
+          context: opx-prod
           requires:
             - test_parallel
             - some_other_job
