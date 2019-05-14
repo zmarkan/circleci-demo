@@ -14,8 +14,7 @@ aliases:
 # Orb Inclusions
 ##########################
 orbs:
-  aws-cli: circleci/aws-cli@0.1.13
-  aws-ecr: circleci/aws-ecr@4.0.1
+  aws-s3: circleci/aws-s3@1.0.8
 
 ##########################
 # Workflow Definitions
@@ -32,10 +31,24 @@ workflows:
           requires:
             - test
       - build_and_push:
-          context: opx-prod
+          context: orpheus-prod
           requires:
             - test_parallel
             - some_other_job
+          filters:
+            branches:
+              only: master
+      - approve:
+          type: approval
+          requires:
+            - build_and_push
+          filters:
+            branches:
+              only: master
+      - deploy:
+          context: orpheus-prod
+          requires:
+            - approve
           filters:
             branches:
               only: master
@@ -151,4 +164,15 @@ jobs:
             echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
             docker push mikeyvxt/slc-devops-2019
             docker push mikeyvxt/slc-devops-2019:${CIRCLE_SHA1}
+
+  deploy:
+    docker:
+      - image: circleci/python:2.7
+    working_directory: *project_dir
+    steps:
+      - attach_workspace:
+          at: .
+      - aws-s3/sync:
+          from: .
+          to: *bucket_name
 
