@@ -30,29 +30,28 @@ workflows:
       - some_other_job:
           requires:
             - test
-      - approve_deploy:
-          type: approval
+      - build_and_push:
+          context: orpheus-prod
           requires:
             - test_parallel
             - some_other_job
           filters:
             branches:
               only: master
-      - deploy:
-          context: orpheus-prod
+      - approve:
+          type: approval
           requires:
-            - approve_deploy
+            - build_and_push
           filters:
             branches:
               only: master
-
-  test-tag:
-    jobs:
-      - tag:
+      - deploy:
+          context: orpheus-prod
+          requires:
+            - approve
           filters:
-            tags:
-              only: '/stesttag*/s'
-
+            branches:
+              only: master
 
   nightly:
     triggers:
@@ -70,11 +69,6 @@ workflows:
 ##########################
 version: 2.1
 jobs:
-  tag:
-    <<: *container_config
-    steps:
-      - run: echo "Hello tag did something"
-
   test:
     <<: *container_config # See common definitions
     steps:
@@ -150,10 +144,26 @@ jobs:
   some_other_job:
     <<: *container_config # See common definitions
     steps:
-      - checkout
+      - attach_workspace:
+          at: .
       - run:
-          name: Echo a message
-          command: echo "Hello World! Now you can deploy your app!"
+          name: Verify that we transferred index.html over
+          command: test -f index.html
+
+  build_and_push:
+    <<: *container_config # See common definitions
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build the Docker image, tag it
+          command: docker build -t mikeyvxt/slc-devops-2019 -t mikeyvxt/slc-devops-2019:${CIRCLE_SHA1} .
+      - run:
+          name: Login to docker hub and push
+          command: |
+            echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
+            docker push mikeyvxt/slc-devops-2019
+            docker push mikeyvxt/slc-devops-2019:${CIRCLE_SHA1}
 
   deploy:
     docker:
