@@ -149,6 +149,9 @@ jobs:
       - run:
           name: Verify that we transferred index.html over
           command: test -f index.html
+      - run:
+          name: Show files in directory
+          command: ls -al
 
   build_and_push:
     <<: *container_config # See common definitions
