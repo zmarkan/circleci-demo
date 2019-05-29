@@ -2,6 +2,7 @@
 ##########################
 # Common Definitions
 ##########################
+# Simple YAML anchors
 aliases:
   - &project_dir "~/circleci-se-challenge"
   - &bucket_name "s3://circleci-se-challenge"
@@ -9,6 +10,42 @@ aliases:
     docker:
       - image: circleci/node:10.15.1-browsers
     working_directory: *project_dir
+
+  # Setting an anchor here because test & test_parallel basically do the same thing
+  - &common_steps
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            - v1-dependencies-
+      - run:
+          name: Install deps
+          command: yarn
+      - save_cache:
+          key: v1-dependencies-{{ checksum "package.json" }}
+          paths:
+            - node_modules
+      - run:
+          name: Split TestCafe tests between containers and run them 
+          command: |
+            TESTFILES=$(circleci tests glob test/* | circleci tests split --total=${NUM_CONTAINERS})
+            echo "Testing $TESTFILES on this container"
+            yarn runTests -- ${TESTFILES}
+      - store_test_results:
+          path: /tmp/test-results
+      - store_artifacts:
+          path: /tmp/test-results
+      - persist_to_workspace:
+          root: .
+          paths:
+            - css
+            - img
+            - index.html
+            - js
+            - mail
+            - scss
+            - vendor
 
 ##########################
 # Orb Inclusions
@@ -70,85 +107,32 @@ workflows:
 version: 2.1
 jobs:
   test:
-    <<: *container_config # See common definitions
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            - v1-dependencies-
-      - run:
-          name: Install deps
-          command: yarn
-      - save_cache:
-          key: v1-dependencies-{{ checksum "package.json" }}
-          paths:
-            - node_modules
-      - run:
-          name: Split TestCafe tests between containers and run them 
-          command: |
-            TESTFILES=$(ls test/*)
-            echo "Testing $TESTFILES on this container"
-            yarn runTests -- ${TESTFILES}
-      - store_test_results:
-          path: /tmp/test-results
-      - store_artifacts:
-          path: /tmp/test-results
-      - persist_to_workspace:
-          root: .
-          paths:
-            - css
-            - img
-            - index.html
-            - js
-            - mail
-            - scss
-            - vendor
+    <<: *container_config # Uses aliases to refer to anchors. See common definitions
+    <<: *common_steps # See test_common job above
+    environment:
+      NUM_CONTAINERS: 1
 
   test_parallel:
     <<: *container_config # See common definitions
+    <<: *common_steps
     parallelism: 4
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            - v1-dependencies-
-      - run:
-          name: Install deps
-          command: yarn
-      - save_cache:
-          key: v1-dependencies-{{ checksum "package.json" }}
-          paths:
-            - node_modules
-      - run:
-          name: Split TestCafe tests between containers and run them 
-          command: |
-            TESTFILES=$(circleci tests glob test/* | circleci tests split --total=4)
-            echo "Testing $TESTFILES on this container"
-            yarn runTests -- ${TESTFILES}
-      - store_test_results:
-          path: /tmp/test-results
-      - store_artifacts:
-          path: /tmp/test-results
-      - persist_to_workspace:
-          root: .
-          paths:
-            - css
-            - img
-            - index.html
-            - js
-            - mail
-            - scss
+    environment:
+      NUM_CONTAINERS: 4
 
   some_other_job:
-    <<: *container_config # See common definitions
+    docker:
+      - image: circleci/node:10.15.1-browsers
+      - image: postgres:9.4.1
+    working_directory: *project_dir
     steps:
       - attach_workspace:
           at: .
       - run:
           name: Verify that we transferred index.html over
           command: test -f index.html
+      - run:
+          name: Sleep for 15 seconds to show PSQL database running
+          command: sleep 15
       - run:
           name: Show files in directory
           command: ls -al
