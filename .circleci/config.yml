@@ -12,7 +12,7 @@ aliases:
     working_directory: *project_dir
 
   # Setting an anchor here because test & test_parallel basically do the same thing
-  - &test_common
+  - &common_steps
     steps:
       - checkout
       - restore_cache:
@@ -106,30 +106,31 @@ workflows:
 ##########################
 version: 2.1
 jobs:
-
   test:
     <<: *container_config # Uses aliases to refer to anchors. See common definitions
-    <<: *test_common # See test_common job above
+    <<: *common_steps # See test_common job above
     environment:
       NUM_CONTAINERS: 1
 
   test_parallel:
     <<: *container_config # See common definitions
-    <<: *test_common
+    <<: *common_steps
     parallelism: 4
     environment:
       NUM_CONTAINERS: 4
 
   some_other_job:
     <<: *container_config # See common definitions
-    docker:
-
+      - image: postgres:9.4.1
     steps:
       - attach_workspace:
           at: .
       - run:
           name: Verify that we transferred index.html over
           command: test -f index.html
+      - run:
+          name: Sleep for 15 seconds to show PSQL database running
+          command: sleep 15
       - run:
           name: Show files in directory
           command: ls -al
