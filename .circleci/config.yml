@@ -120,8 +120,10 @@ jobs:
       NUM_CONTAINERS: 4
 
   some_other_job:
-    <<: *container_config # See common definitions
+    docker:
+      - image: circleci/node:10.15.1-browsers
       - image: postgres:9.4.1
+    working_directory: *project_dir
     steps:
       - attach_workspace:
           at: .
