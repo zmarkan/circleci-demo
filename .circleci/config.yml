@@ -9,7 +9,6 @@ aliases:
   - &container_config
     docker:
       - image: circleci/node:10.15.1-browsers
-  - &working_dir
     working_directory: *project_dir
 
   # Setting an anchor here because test & test_parallel basically do the same thing
@@ -110,14 +109,12 @@ jobs:
 
   test:
     <<: *container_config # Uses aliases to refer to anchors. See common definitions
-    <<: *working_dir
     <<: *test_common # See test_common job above
     environment:
       NUM_CONTAINERS: 1
 
   test_parallel:
     <<: *container_config # See common definitions
-    <<: *working_dir
     <<: *test_common
     parallelism: 4
     environment:
