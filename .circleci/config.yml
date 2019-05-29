@@ -12,6 +12,42 @@ aliases:
   - &working_dir
     working_directory: *project_dir
 
+  # Setting an anchor here because test & test_parallel basically do the same thing
+  - &test_common
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            - v1-dependencies-
+      - run:
+          name: Install deps
+          command: yarn
+      - save_cache:
+          key: v1-dependencies-{{ checksum "package.json" }}
+          paths:
+            - node_modules
+      - run:
+          name: Split TestCafe tests between containers and run them 
+          command: |
+            TESTFILES=$(circleci tests glob test/* | circleci tests split --total=${NUM_CONTAINERS})
+            echo "Testing $TESTFILES on this container"
+            yarn runTests -- ${TESTFILES}
+      - store_test_results:
+          path: /tmp/test-results
+      - store_artifacts:
+          path: /tmp/test-results
+      - persist_to_workspace:
+          root: .
+          paths:
+            - css
+            - img
+            - index.html
+            - js
+            - mail
+            - scss
+            - vendor
+
 ##########################
 # Orb Inclusions
 ##########################
@@ -71,42 +107,6 @@ workflows:
 ##########################
 version: 2.1
 jobs:
-
-  # Setting an anchor here because test & test_parallel basically do the same thing
-  test-common: &test_common
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            - v1-dependencies-
-      - run:
-          name: Install deps
-          command: yarn
-      - save_cache:
-          key: v1-dependencies-{{ checksum "package.json" }}
-          paths:
-            - node_modules
-      - run:
-          name: Split TestCafe tests between containers and run them 
-          command: |
-            TESTFILES=$(circleci tests glob test/* | circleci tests split --total=${NUM_CONTAINERS})
-            echo "Testing $TESTFILES on this container"
-            yarn runTests -- ${TESTFILES}
-      - store_test_results:
-          path: /tmp/test-results
-      - store_artifacts:
-          path: /tmp/test-results
-      - persist_to_workspace:
-          root: .
-          paths:
-            - css
-            - img
-            - index.html
-            - js
-            - mail
-            - scss
-            - vendor
 
   test:
     <<: *container_config # Uses aliases to refer to anchors. See common definitions
