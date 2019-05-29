@@ -2,12 +2,14 @@
 ##########################
 # Common Definitions
 ##########################
+# Simple YAML anchors
 aliases:
   - &project_dir "~/circleci-se-challenge"
   - &bucket_name "s3://circleci-se-challenge"
   - &container_config
     docker:
       - image: circleci/node:10.15.1-browsers
+  - &working_dir
     working_directory: *project_dir
 
 ##########################
@@ -69,8 +71,9 @@ workflows:
 ##########################
 version: 2.1
 jobs:
-  test:
-    <<: *container_config # See common definitions
+
+  # Setting an anchor here because test & test_parallel basically do the same thing
+  test-common: &test_common
     steps:
       - checkout
       - restore_cache:
@@ -87,7 +90,7 @@ jobs:
       - run:
           name: Split TestCafe tests between containers and run them 
           command: |
-            TESTFILES=$(ls test/*)
+            TESTFILES=$(circleci tests glob test/* | circleci tests split --total=${NUM_CONTAINERS})
             echo "Testing $TESTFILES on this container"
             yarn runTests -- ${TESTFILES}
       - store_test_results:
@@ -105,44 +108,25 @@ jobs:
             - scss
             - vendor
 
+  test:
+    <<: *container_config # Uses aliases to refer to anchors. See common definitions
+    <<: *working_dir
+    <<: *test_common # See test_common job above
+    environment:
+      NUM_CONTAINERS: 1
+
   test_parallel:
     <<: *container_config # See common definitions
+    <<: *working_dir
+    <<: *test_common
     parallelism: 4
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            - v1-dependencies-
-      - run:
-          name: Install deps
-          command: yarn
-      - save_cache:
-          key: v1-dependencies-{{ checksum "package.json" }}
-          paths:
-            - node_modules
-      - run:
-          name: Split TestCafe tests between containers and run them 
-          command: |
-            TESTFILES=$(circleci tests glob test/* | circleci tests split --total=4)
-            echo "Testing $TESTFILES on this container"
-            yarn runTests -- ${TESTFILES}
-      - store_test_results:
-          path: /tmp/test-results
-      - store_artifacts:
-          path: /tmp/test-results
-      - persist_to_workspace:
-          root: .
-          paths:
-            - css
-            - img
-            - index.html
-            - js
-            - mail
-            - scss
+    environment:
+      NUM_CONTAINERS: 4
 
   some_other_job:
     <<: *container_config # See common definitions
+    docker:
+
     steps:
       - attach_workspace:
           at: .
