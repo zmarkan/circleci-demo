@@ -109,13 +109,13 @@ version: 2.1
 jobs:
   test:
     <<: *container_config # Uses aliases to refer to anchors. See common definitions
-    <<: *common_steps # See test_common job above
+    <<: *common_steps # See common_steps above
     environment:
       NUM_CONTAINERS: 1
 
   test_parallel:
     <<: *container_config # See common definitions
-    <<: *common_steps
+    <<: *common_steps # See common_steps above
     parallelism: 4
     environment:
       NUM_CONTAINERS: 4
