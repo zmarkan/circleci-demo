@@ -36,6 +36,7 @@ aliases:
           path: /tmp/test-results
       - store_artifacts:
           path: /tmp/test-results
+          destination: test-results
       - persist_to_workspace:
           root: .
           paths:
