@@ -39,13 +39,13 @@
   "homepage": "https://github.com/mvxt/circleci-se-challenge#readme",
   "dependencies": {
     "@fortawesome/fontawesome-free": "5.8.1",
+    "axios": "^0.19.0",
     "bootstrap": "4.3.1",
+    "fstream": "^1.0.12",
     "jquery": "3.4.0",
     "jquery.easing": "^1.4.1"
   },
   "devDependencies": {
-    "http-server": "^0.11.1",
-    "testcafe": "^1.0.0",
     "browser-sync": "2.26.3",
     "del": "4.0.0",
     "gulp": "4.0.0",
@@ -56,6 +56,8 @@
     "gulp-rename": "1.4.0",
     "gulp-sass": "4.0.2",
     "gulp-uglify": "3.0.2",
-    "merge-stream": "^1.0.1"
+    "http-server": "^0.11.1",
+    "merge-stream": "^1.0.1",
+    "testcafe": "^1.0.0"
   }
 }
