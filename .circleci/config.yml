@@ -1,5 +1,11 @@
 # Author: @mvxt
 ##########################
+# Orb Inclusions
+##########################
+orbs:
+  aws-s3: circleci/aws-s3@1.0.8
+
+##########################
 # Common Definitions
 ##########################
 # Simple YAML anchors
@@ -11,7 +17,7 @@ aliases:
       - image: circleci/node:10.15.1-browsers
     working_directory: *project_dir
 
-  # Setting an anchor here because test & test_parallel basically do the same thing
+  # Anchoring common steps between two jobs
   - &common_steps
     steps:
       - checkout
@@ -47,12 +53,6 @@ aliases:
             - mail
             - scss
             - vendor
-
-##########################
-# Orb Inclusions
-##########################
-orbs:
-  aws-s3: circleci/aws-s3@1.0.8
 
 ##########################
 # Workflow Definitions
