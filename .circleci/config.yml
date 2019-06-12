@@ -16,6 +16,7 @@ aliases:
     docker:
       - image: circleci/node:10.15.1-browsers
     working_directory: *project_dir
+    resource_class: medium
 
   # Anchoring common steps between two jobs
   - &common_steps
