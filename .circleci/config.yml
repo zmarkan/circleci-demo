@@ -66,11 +66,11 @@ workflows:
       - test_parallel:
           requires:
             - test
-      - some_other_job:
+      - some_other_job_prod:
           context: orpheus-prod
           requires:
             - test
-      - some_other_job:
+      - some_other_job_stage:
           context: orpheus-stage
           requires:
             - test
@@ -78,7 +78,8 @@ workflows:
           context: orpheus-prod
           requires:
             - test_parallel
-            - some_other_job
+            - some_other_job_prod
+            - some_other_job_stage
           filters:
             branches:
               only: master
@@ -126,7 +127,7 @@ jobs:
     environment:
       NUM_CONTAINERS: 4
 
-  some_other_job:
+  common_other: &common_other
     docker:
       - image: circleci/node:10.15.1-browsers
       - image: postgres:9.4.1
@@ -146,6 +147,12 @@ jobs:
       - run:
           name: Echo env var from differing contexts
           command: echo "$TEST_VAR"
+
+  some_other_job_prod:
+    <<: *common_other
+
+  some_other_job_stage:
+    <<: *common_other
 
   build_and_push:
     <<: *container_config # See common definitions
