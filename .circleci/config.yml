@@ -67,6 +67,11 @@ workflows:
           requires:
             - test
       - some_other_job:
+          context: orpheus-prod
+          requires:
+            - test
+      - some_other_job:
+          context: orpheus-stage
           requires:
             - test
       - build_and_push:
@@ -138,6 +143,9 @@ jobs:
       - run:
           name: Show files in directory
           command: ls -al
+      - run:
+          name: Echo env var from differing contexts
+          command: echo "$TEST_VAR"
 
   build_and_push:
     <<: *container_config # See common definitions
