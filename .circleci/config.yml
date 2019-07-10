@@ -147,6 +147,7 @@ jobs:
       - run:
           name: Echo env var from differing contexts
           command: echo "$TEST_VAR"
+      - run: hello.sh
 
   some_other_job_prod:
     <<: *common_other
