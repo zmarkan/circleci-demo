@@ -54,6 +54,13 @@ aliases:
             - mail
             - scss
             - vendor
+##########################
+# Parameter Definitions
+##########################
+parameters:
+  test_parameter:
+    type: boolean
+    default: false 
 
 ##########################
 # Workflow Definitions
@@ -61,6 +68,7 @@ aliases:
 workflows:
   version: 2.1
   build-deploy:
+    when: << pipeline.parameters.test_parameter >>
     jobs:
       - test
       - test_parallel:
@@ -162,8 +170,7 @@ jobs:
       - run:
           name: Tar required folders
           command: tar -czf dirs.tar.gz css img js mail scss vendor
-      - run:
-          name: Build the Docker image, tag it
+      - run: name: Build the Docker image, tag it
           command: docker build -t mikeyvxt/slc-devops-2019 -t mikeyvxt/slc-devops-2019:${CIRCLE_SHA1} .
       - run:
           name: Login to docker hub and push
