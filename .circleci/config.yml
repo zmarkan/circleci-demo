@@ -54,6 +54,13 @@ aliases:
             - mail
             - scss
             - vendor
+##########################
+# Parameter Definitions
+##########################
+parameters:
+  test_parameter:
+    type: boolean
+    default: false 
 
 ##########################
 # Workflow Definitions
@@ -61,6 +68,7 @@ aliases:
 workflows:
   version: 2.1
   build-deploy:
+    when: << pipeline.parameters.test_parameter >>
     jobs:
       - test
       - test_parallel:
