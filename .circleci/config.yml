@@ -8,18 +8,28 @@ orbs:
 ##########################
 # Common Definitions
 ##########################
+
 # Simple YAML anchors
 aliases:
   - &project_dir "~/circleci-se-challenge"
   - &bucket_name "s3://circleci-se-challenge"
-  - &container_config
+
+# Executors
+executors:
+  node-exec:
     docker:
       - image: circleci/node:10.15.1-browsers
     working_directory: *project_dir
     resource_class: medium
 
-  # Anchoring common steps between two jobs
-  - &common_steps
+# Commands
+commands:
+  node-test:
+    description: "Set of steps to setup Node.js and run TestCafe tests"
+    parameters:
+      num_containers:
+        type: integer
+        default: 1
     steps:
       - checkout
       - restore_cache:
@@ -36,7 +46,7 @@ aliases:
       - run:
           name: Split TestCafe tests between containers and run them 
           command: |
-            TESTFILES=$(circleci tests glob test/* | circleci tests split --total=${NUM_CONTAINERS})
+            TESTFILES=$(circleci tests glob test/* | circleci tests split --total=<< parameters.num_containers >>)
             echo "Testing $TESTFILES on this container"
             yarn runTests -- ${TESTFILES}
       - store_test_results:
@@ -115,17 +125,17 @@ workflows:
 version: 2.1
 jobs:
   test:
-    <<: *container_config # Uses aliases to refer to anchors. See common definitions
-    <<: *common_steps # See common_steps above
-    environment:
-      NUM_CONTAINERS: 1
+    executor: node-exec
+    steps:
+      - node-test:
+          num_containers: 1
 
   test_parallel:
-    <<: *container_config # See common definitions
-    <<: *common_steps # See common_steps above
+    executor: node-exec
     parallelism: 4
-    environment:
-      NUM_CONTAINERS: 4
+    steps:
+      - node-test:
+          num_containers: 4
 
   common_other: &common_other
     docker:
@@ -155,7 +165,7 @@ jobs:
     <<: *common_other
 
   build_and_push:
-    <<: *container_config # See common definitions
+    executor: node-exec
     steps:
       - checkout
       - setup_remote_docker
