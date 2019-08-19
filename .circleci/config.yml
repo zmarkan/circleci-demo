@@ -8,7 +8,6 @@ orbs:
 ##########################
 # Common Definitions
 ##########################
-
 # Simple YAML anchors
 aliases:
   - &project_dir "~/circleci-se-challenge"
@@ -19,6 +18,12 @@ executors:
   node-exec:
     docker:
       - image: circleci/node:10.15.1-browsers
+    working_directory: *project_dir
+    resource_class: medium
+  db-exec:
+    docker:
+      - image: circleci/node:10.15.1-browsers
+      - image: postgres:9.4.1
     working_directory: *project_dir
     resource_class: medium
 
@@ -64,6 +69,23 @@ commands:
             - mail
             - scss
             - vendor
+  context-test:
+    description: "Simple steps to echo variables in different contexts"
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Verify that we transferred index.html over
+          command: test -f index.html
+      - run:
+          name: Sleep for 15 seconds to show PSQL database running
+          command: sleep 15
+      - run:
+          name: Show files in directory
+          command: ls -al
+      - run:
+          name: Echo env var from differing contexts
+          command: echo "$TEST_VAR"
 
 ##########################
 # Workflow Definitions
@@ -76,11 +98,11 @@ workflows:
       - test_parallel:
           requires:
             - test
-      - some_other_job_prod:
+      - prod_job:
           context: orpheus-prod
           requires:
             - test
-      - some_other_job_stage:
+      - staging_job:
           context: orpheus-stage
           requires:
             - test
@@ -137,32 +159,15 @@ jobs:
       - node-test:
           num_containers: 4
 
-  common_other: &common_other
-    docker:
-      - image: circleci/node:10.15.1-browsers
-      - image: postgres:9.4.1
-    working_directory: *project_dir
+  prod_job:
+    executor: db-exec
     steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: Verify that we transferred index.html over
-          command: test -f index.html
-      - run:
-          name: Sleep for 15 seconds to show PSQL database running
-          command: sleep 15
-      - run:
-          name: Show files in directory
-          command: ls -al
-      - run:
-          name: Echo env var from differing contexts
-          command: echo "$TEST_VAR"
+      - context-test
 
-  some_other_job_prod:
-    <<: *common_other
-
-  some_other_job_stage:
-    <<: *common_other
+  staging_job:
+    executor: db-exec
+    steps:
+      - context-test
 
   build_and_push:
     executor: node-exec
