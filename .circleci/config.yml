@@ -100,8 +100,8 @@ workflows:
           context: orpheus-prod
           requires:
             - test_parallel
-            - some_other_job_prod
-            - some_other_job_stage
+            - staging_job
+            - prod_job
           filters:
             branches:
               only: master
