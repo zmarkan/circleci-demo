@@ -175,7 +175,8 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - setup_remote_docker
+      - setup_remote_docker:
+          docker_layer_caching: true
       - run:
           name: Build the Docker image, tag it
           command: docker build -t ${DOCKER_TAG} -t ${DOCKER_TAG}:${CIRCLE_SHA1} .
