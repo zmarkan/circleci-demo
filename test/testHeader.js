@@ -5,12 +5,12 @@ fixture `Testing Header & Hero Section`
 
 test('Check page has welcome message', async t => {
   await t
-      .expect(Selector('.intro-lead-in').innerText).eql('Orpheus Studios');
+      .expect(Selector('.intro-lead-in').innerText).eql('Welcome to Our Studio');
 });
 
 test('Check subheading matches marketing template', async t => {
   await t
-      .expect(Selector('.intro-heading').innerText).eql("DESIGN YOUR PROJECT TODAY");
+      .expect(Selector('.intro-heading').innerText).eql("LET US DESIGN YOUR DREAM PROJECT");
 });
 
 test('Check button has effective call to action', async t => {
