@@ -26,11 +26,6 @@ executors:
       - image: postgres:9.4.1
     working_directory: *project_dir
     resource_class: medium
-  machine-exec:
-    machine: true
-      image: ubuntu-1604:201903-01
-    working_directory: *project_dir
-    resource_class: large
 
 # Commands
 commands:
@@ -89,7 +84,6 @@ workflows:
   version: 2.1
   build-deploy:
     jobs:
-      - machine_test
       - test
       - test_parallel:
           requires:
@@ -142,10 +136,6 @@ workflows:
 ##########################
 version: 2.1
 jobs:
-  machine_test:
-    executor: machine-exec
-    steps:
-      - run: echo "Hello World!"
   test:
     executor: node-exec
     steps:
