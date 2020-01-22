@@ -5,7 +5,7 @@
   "description": "Start Bootstrap - Agency Theme, modified for CircleCI demo",
   "scripts": {
     "test": "NODE_NO_WARNINGS=1 testcafe \"chrome:headless\",\"firefox:headless\" test/**/*",
-    "runTests": "NODE_NO_WARNINGS=1 testcafe \"chrome:headless\",\"firefox:headless\" -r spec,xunit:/tmp/test-results/testcafe/results.xml",
+    "runTests": "NODE_NO_WARNINGS=1 testcafe \"chrome:headless\",\"firefox:headless\" -r spec,xunit:/tmp/test-results/testcafe/results.xml,html:results.html",
     "start": "gulp watch",
     "build": "docker build ."
   },
