@@ -40,7 +40,7 @@ workflows:
   build-deploy:
     jobs:
       - test
-      - build_and_push_docker:
+      - build-and-push-docker:
           context: orpheus-prod
           requires:
             - test
@@ -115,7 +115,7 @@ jobs:
             - mail
             - scss
 
-  build_and_push:
+  build-and-push-docker:
     executor: node-exec
     steps:
       - attach_workspace:
