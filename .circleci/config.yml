@@ -20,21 +20,65 @@ executors:
       - image: circleci/node:10.15.1-browsers
     working_directory: *project_dir
     resource_class: medium
-  db-exec:
-    docker:
-      - image: circleci/node:10.15.1-browsers
-      - image: postgres:9.4.1
-    working_directory: *project_dir
-    resource_class: medium
 
 # Commands
 commands:
-  node-test:
-    description: "Set of steps to setup Node.js and run TestCafe tests"
+  hello:
+    description: "Show off parameterization and concurrent jobs"
     parameters:
-      num_containers:
-        type: integer
-        default: 1
+      subject:
+        type: string
+        default: "World"
+    steps:
+      - echo "Hello << parameters.subject >>!"
+
+##########################
+# Workflow Definitions
+##########################
+workflows:
+  version: 2.1
+  build-deploy:
+    jobs:
+      - test
+      - build-and-push-docker:
+          context: orpheus-prod
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - approve_deploy:
+          type: approval
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - deploy:
+          context: orpheus-prod
+          requires:
+            - approve_deploy
+          filters:
+            branches:
+              only: master
+
+  nightly:
+    jobs:
+      - test
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only: master
+
+##########################
+# Job Definitions
+##########################
+version: 2.1
+jobs:
+  test:
+    executor: node-exec
     steps:
       - checkout
       - restore_cache:
@@ -49,98 +93,16 @@ commands:
           paths:
             - node_modules
       - run:
-          name: Split TestCafe tests between containers and run them 
+          name: Run TestCafe Tests 
           command: |
-            TESTFILES=$(circleci tests glob test/* | circleci tests split --total=<< parameters.num_containers >>)
-            echo "Testing $TESTFILES on this container"
-            yarn runTests -- ${TESTFILES}
+            yarn runTests
       - store_test_results:
           path: /tmp/test-results
       - store_artifacts:
           path: /tmp/test-results
           destination: . 
-  context-test:
-    description: "Simple steps to echo variables in different contexts"
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: Verify that we transferred index.html over
-          command: test -f index.html
-      - run:
-          name: Sleep for 15 seconds to show PSQL database running
-          command: sleep 15
-      - run:
-          name: Show files in directory
-          command: ls -al
-      - run:
-          name: Echo env var from differing contexts
-          command: echo "$TEST_VAR"
-
-##########################
-# Workflow Definitions
-##########################
-workflows:
-  version: 2.1
-  build-deploy:
-    jobs:
-      - test
-      - test_parallel:
-          requires:
-            - test
-      - prod_job:
-          context: orpheus-prod
-          requires:
-            - test
-      - staging_job:
-          context: orpheus-stage
-          requires:
-            - test
-      - build_and_push:
-          context: orpheus-prod
-          requires:
-            - test_parallel
-            - staging_job
-            - prod_job
-          filters:
-            branches:
-              only: master
-      - approve:
-          type: approval
-          requires:
-            - build_and_push
-          filters:
-            branches:
-              only: master
-      - deploy:
-          context: orpheus-prod
-          requires:
-            - approve
-          filters:
-            branches:
-              only: master
-
-  nightly:
-    triggers:
-      - schedule:
-          cron: "0 0 * * *"
-          filters:
-            branches:
-              only: master
-
-    jobs:
-      - test_parallel
-
-##########################
-# Job Definitions
-##########################
-version: 2.1
-jobs:
-  test:
-    executor: node-exec
-    steps:
-      - node-test:
-          num_containers: 1
+      - store_artifacts:
+          path: ./results.html
       - persist_to_workspace:
           root: .
           paths:
@@ -153,24 +115,7 @@ jobs:
             - mail
             - scss
 
-  test_parallel:
-    executor: node-exec
-    parallelism: 4
-    steps:
-      - node-test:
-          num_containers: 4
-
-  prod_job:
-    executor: db-exec
-    steps:
-      - context-test
-
-  staging_job:
-    executor: db-exec
-    steps:
-      - context-test
-
-  build_and_push:
+  build-and-push-docker:
     executor: node-exec
     steps:
       - attach_workspace:
