@@ -70,7 +70,7 @@ workflows:
           requires:
             - approve
           repo: "vinny-se-repo"
-          tag: "latest,${CIRCLE_SHA}"
+          tag: "latest,${CIRCLE_SHA1}"
       - deploy:
           context: orpheus-prod
           requires:
