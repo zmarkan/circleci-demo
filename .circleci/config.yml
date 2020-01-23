@@ -75,7 +75,7 @@ workflows:
           context: orpheus-prod
           requires:
             - build-and-push-dockerhub
-            - build-and-push-ecr
+              #- build-and-push-image
           filters:
             branches:
               only: master
