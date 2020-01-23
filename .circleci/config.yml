@@ -24,14 +24,14 @@ executors:
 
 # Commands
 commands:
-  hello:
+  say-hello:
     description: "Show off parameterization and concurrent jobs"
     parameters:
       subject:
         type: string
         default: "World"
     steps:
-      - echo "Hello << parameters.subject >>!"
+      - run: echo "Hello << parameters.subject >>!"
 
 ##########################
 # Workflow Definitions
@@ -156,9 +156,10 @@ jobs:
   parameterized-command:
     executor: node-exec
     steps:
-      - hello
-      - hello:
-          subject: "Buddy!"
+      - say-hello:
+          subject: "World"
+      - say-hello:
+          subject: "Buddy"
 
   build-and-push-docker:
     executor: node-exec
