@@ -58,17 +58,24 @@ workflows:
           filters:
             branches:
               only: master
-      - build-and-push-docker:
+      - build-and-push-dockerhub:
           context: orpheus-prod
           requires:
             - approve
           filters:
             branches:
               only: master
+      - aws-ecr/build-and-push-image:
+          context: orpheus-prod
+          repo: vinny-se-repo
+          tag: 'latest,$CIRCLE_SHA'
+          requires:
+            - approve
       - deploy:
           context: orpheus-prod
           requires:
-            - approve
+            - build-and-push-dockerhub
+            - build-and-push-ecr
           filters:
             branches:
               only: master
@@ -163,7 +170,7 @@ jobs:
       - say-hello:
           subject: "Buddy"
 
-  build-and-push-docker:
+  build-and-push-dockerhub:
     executor: node-exec
     steps:
       - attach_workspace:
@@ -179,14 +186,6 @@ jobs:
             echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
             docker push ${DOCKER_TAG}
             docker push ${DOCKER_TAG}:${CIRCLE_SHA1}
-      - aws-cli/install
-      - aws-cli/setup
-      - aws-ecr/ecr-login
-      - aws-ecr/push-image:
-          repo: vinny-se-repo
-      - aws-ecr/push-image:
-          repo: vinny-se-repo
-          tag: "${CIRCLE_SHA1}"
 
   deploy:
     docker:
