@@ -52,7 +52,7 @@ workflows:
           type: approval
           requires:
             - test-parallel 
-            - hello
+            - parameterized-command 
           filters:
             branches:
               only: master
