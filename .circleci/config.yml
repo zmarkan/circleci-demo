@@ -69,9 +69,7 @@ workflows:
           context: orpheus-prod
           requires:
             - approve
-          account-url: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
           repo: "vinny-se-repo"
-          region: "AWS_REGION"
           tag: "latest,${CIRCLE_SHA}"
       - deploy:
           context: orpheus-prod
