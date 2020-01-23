@@ -4,6 +4,7 @@
 ##########################
 orbs:
   aws-s3: circleci/aws-s3@1.0.8
+  sumologic: circleci/sumologic@1.0.3
 
 ##########################
 # Common Definitions
@@ -39,6 +40,7 @@ workflows:
   version: 2.1
   build-deploy:
     jobs:
+      - sumologic/workflow-collector
       - test
       - build-and-push-docker:
           context: orpheus-prod
