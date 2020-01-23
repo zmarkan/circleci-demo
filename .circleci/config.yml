@@ -6,6 +6,7 @@ orbs:
   aws-s3: circleci/aws-s3@1.0.8
   sumologic: circleci/sumologic@1.0.3
   aws-ecr: circleci/aws-ecr@6.7.0
+  aws-cli: circleci/aws-cli@0.1.19
 
 ##########################
 # Common Definitions
@@ -178,6 +179,8 @@ jobs:
             echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
             docker push ${DOCKER_TAG}
             docker push ${DOCKER_TAG}:${CIRCLE_SHA1}
+      - aws-cli/install
+      - aws-cli/setup
       - aws-ecr/ecr-login
       - aws-ecr/push-image:
           repo: vinny-se-repo
