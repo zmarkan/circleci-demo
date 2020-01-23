@@ -67,15 +67,17 @@ workflows:
               only: master
       - aws-ecr/build-and-push-image:
           context: orpheus-prod
-          repo: vinny-se-repo
-          tag: 'latest,$CIRCLE_SHA'
           requires:
             - approve
+          account-url: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+          repo: "vinny-se-repo"
+          region: ${AWS_DEFAULT_REGION}
+          tag: "latest,${CIRCLE_SHA}"
       - deploy:
           context: orpheus-prod
           requires:
             - build-and-push-dockerhub
-              #- build-and-push-image
+            - aws-ecr/build-and-push-image
           filters:
             branches:
               only: master
