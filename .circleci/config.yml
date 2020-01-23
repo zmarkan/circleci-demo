@@ -45,7 +45,7 @@ workflows:
       - test-parallel:
           requires:
             - test
-      - hello:
+      - parameterized-command:
           requires:
             - test
       - approve:
@@ -153,7 +153,7 @@ jobs:
       - store_artifacts:
           path: ./results.html
 
-  hello:
+  parameterized-command:
     executor: node-exec
     steps:
       - hello
