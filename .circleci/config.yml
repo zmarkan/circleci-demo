@@ -37,20 +37,27 @@ commands:
 # Workflow Definitions
 ##########################
 workflows:
-  version: 2.1
+  version: 2
   build-deploy:
     jobs:
       - sumologic/workflow-collector
       - test
-      - build-and-push-docker:
-          context: orpheus-prod
+      - test-parallel:
           requires:
             - test
+      - hello:
+          requires:
+            - test
+      - approve:
+          type: approval
+          requires:
+            - test-parallel 
+            - hello
           filters:
             branches:
               only: master
-      - approve_deploy:
-          type: approval
+      - build-and-push-docker:
+          context: orpheus-prod
           requires:
             - test
           filters:
@@ -59,7 +66,7 @@ workflows:
       - deploy:
           context: orpheus-prod
           requires:
-            - approve_deploy
+            - approve
           filters:
             branches:
               only: master
@@ -116,6 +123,42 @@ jobs:
             - js
             - mail
             - scss
+
+  test-parallel:
+    executor: node-exec
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            - v1-dependencies-
+      - run:
+          name: Install deps
+          command: yarn
+      - save_cache:
+          key: v1-dependencies-{{ checksum "package.json" }}
+          paths:
+            - node_modules
+      - run:
+          name: Glob, Split, and Run TestCafe Tests 
+          command: |
+            TESTFILES=$(circleci tests glob test/* | circleci tests split --total=4)
+            echo "Testing $TESTFILES on this container"
+            yarn runTests -- ${TESTFILES}
+      - store_test_results:
+          path: /tmp/test-results
+      - store_artifacts:
+          path: /tmp/test-results
+          destination: . 
+      - store_artifacts:
+          path: ./results.html
+
+  hello:
+    executor: node-exec
+    steps:
+      - hello
+      - hello:
+          subject: "Buddy!"
 
   build-and-push-docker:
     executor: node-exec
