@@ -13,8 +13,7 @@ orbs:
 ##########################
 # Simple YAML anchors
 aliases:
-  - &project_dir "~/circleci-se-challenge"
-  - &bucket_name "s3://circleci-se-challenge"
+  - &project_dir "~/project"
 
 # Executors
 executors:
@@ -59,20 +58,20 @@ workflows:
             branches:
               only: master
       - build-and-push-dockerhub:
-          context: orpheus-prod
+          context: demo-prod
           requires:
             - approve
           filters:
             branches:
               only: master
       - aws-ecr/build-and-push-image:
-          context: orpheus-prod
+          context: demo-prod
           requires:
             - approve
-          repo: "vinny-se-repo"
+          repo: "$AWS_ECR_REPO_NAME"
           tag: "latest,${CIRCLE_SHA1}"
       - deploy:
-          context: orpheus-prod
+          context: demo-prod
           requires:
             - build-and-push-dockerhub
             - aws-ecr/build-and-push-image
@@ -196,5 +195,5 @@ jobs:
           at: .
       - aws-s3/sync:
           from: .
-          to: *bucket_name
+          to: "$AWS_S3_BUCKET_NAME" 
 
