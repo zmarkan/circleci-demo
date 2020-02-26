@@ -41,7 +41,10 @@ workflows:
   version: 2
   build-deploy:
     jobs:
-      - sumologic/workflow-collector
+      - sumologic/workflow-collector:
+          filters:
+            branches:
+              only: master
       - test
       - test-parallel:
           requires:
