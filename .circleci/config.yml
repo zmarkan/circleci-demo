@@ -134,6 +134,7 @@ jobs:
 
   test-parallel:
     executor: node-exec
+    parallelism: 4
     steps:
       - checkout
       - restore_cache:
