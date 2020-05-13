@@ -167,6 +167,7 @@ jobs:
 
   parameterized-command:
     executor: node-exec
+    resource_class: small
     steps:
       - say-hello:
           subject: "World"
