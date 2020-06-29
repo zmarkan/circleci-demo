@@ -38,28 +38,27 @@
   },
   "homepage": "https://github.com/mvxt/circleci-se-challenge#readme",
   "dependencies": {
-    "@fortawesome/fontawesome-free": "5.8.1",
+    "@fortawesome/fontawesome-free": "5.13.1",
     "axios": "^0.19.0",
-    "bootstrap": "4.3.1",
+    "bootstrap": "4.5.0",
     "fstream": "^1.0.12",
-    "jquery": "3.4.0",
+    "jquery": "3.5.1",
     "jquery.easing": "^1.4.1"
   },
   "devDependencies": {
-    "browser-sync": "2.26.3",
-    "del": "4.0.0",
-    "gulp": "4.0.0",
-    "gulp-autoprefixer": "6.0.0",
-    "gulp-clean-css": "4.0.0",
-    "gulp-header": "2.0.7",
+    "browser-sync": "2.26.7",
+    "del": "5.1.0",
+    "gulp": "4.0.2",
+    "gulp-autoprefixer": "7.0.1",
+    "gulp-clean-css": "4.3.0",
+    "gulp-header": "2.0.9",
     "gulp-plumber": "^1.2.1",
-    "gulp-rename": "1.4.0",
-    "gulp-sass": "4.0.2",
+    "gulp-rename": "2.0.0",
+    "gulp-sass": "4.1.0",
     "gulp-uglify": "3.0.2",
-    "http-server": "^0.11.1",
     "lodash": "^4.17.13",
-    "merge-stream": "^1.0.1",
-    "testcafe": "^1.0.0",
-    "testcafe-reporter-html": "^1.4.5"
+    "merge-stream": "2.0.0",
+    "testcafe": "^1.8.7",
+    "testcafe-reporter-html": "^1.4.6"
   }
 }
