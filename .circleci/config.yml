@@ -19,7 +19,7 @@ aliases:
 executors:
   node-exec:
     docker:
-      - image: cimg/node:15.0-browsers
+      - image: cimg/python:3.6-node-browsers
     working_directory: *project_dir
     resource_class: medium
 
