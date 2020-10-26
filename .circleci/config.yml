@@ -103,13 +103,13 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            - v1-dependencies-
+            - v1.1-dependencies-{{ checksum "package.json" }}
+            - v1.1-dependencies-
       - run:
           name: Install deps
           command: yarn
       - save_cache:
-          key: v1-dependencies-{{ checksum "package.json" }}
+          key: v1.1-dependencies-{{ checksum "package.json" }}
           paths:
             - node_modules
       - run:
@@ -142,13 +142,13 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            - v1-dependencies-
+            - v1.1-dependencies-{{ checksum "package.json" }}
+            - v1.1-dependencies-
       - run:
           name: Install deps
           command: yarn
       - save_cache:
-          key: v1-dependencies-{{ checksum "package.json" }}
+          key: v1.1-dependencies-{{ checksum "package.json" }}
           paths:
             - node_modules
       - run:
