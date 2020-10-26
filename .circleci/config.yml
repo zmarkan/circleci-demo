@@ -19,7 +19,7 @@ aliases:
 executors:
   node-exec:
     docker:
-      - image: circleci/node:10.15.1-browsers
+      - image: cimg/node:15.0-browsers
     working_directory: *project_dir
     resource_class: medium
 
@@ -193,7 +193,7 @@ jobs:
 
   deploy:
     docker:
-      - image: circleci/python:2.7
+      - image: cimg/python:3.6
     working_directory: *project_dir
     steps:
       - attach_workspace:
