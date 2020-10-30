@@ -7,6 +7,7 @@ orbs:
   sumologic: circleci/sumologic@1.0.4
   aws-ecr: circleci/aws-ecr@6.7.0
   aws-cli: circleci/aws-cli@0.1.19
+  browser-tools: circleci/browser-tools@1.1.0
 
 ##########################
 # Common Definitions
@@ -105,6 +106,8 @@ jobs:
           keys:
             - v1.1-dependencies-{{ checksum "package.json" }}
             - v1.1-dependencies-
+      - browser-tools/install-chrome
+      - browser-tools/install-firefox
       - run:
           name: Install deps
           command: yarn
@@ -144,6 +147,8 @@ jobs:
           keys:
             - v1.1-dependencies-{{ checksum "package.json" }}
             - v1.1-dependencies-
+      - browser-tools/install-chrome
+      - browser-tools/install-firefox
       - run:
           name: Install deps
           command: yarn
