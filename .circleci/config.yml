@@ -17,7 +17,8 @@ aliases:
 
 # Executors
 executors:
-  node-exec:
+  python-browsers:
+    description: Using python-browsers because node-gyp requires Python... 🤦
     docker:
       - image: cimg/python:3.6-browsers
     working_directory: *project_dir
@@ -39,7 +40,7 @@ commands:
 ##########################
 workflows:
   version: 2
-  build-deploy:
+  test-build:
     jobs:
       - test
       - test-parallel:
@@ -69,7 +70,7 @@ workflows:
             - approve
           repo: "$AWS_ECR_REPO_NAME"
           tag: "latest,${CIRCLE_SHA1}"
-      - deploy:
+      - push-s3:
           context: demo-prod
           requires:
             - build-and-push-dockerhub
@@ -78,7 +79,7 @@ workflows:
             branches:
               only: master
 
-  nightly:
+  weekly:
     jobs:
       - test
     triggers:
@@ -94,7 +95,7 @@ workflows:
 version: 2.1
 jobs:
   test:
-    executor: node-exec
+    executor: python-browsers
     steps:
       - checkout
       - restore_cache:
@@ -134,7 +135,7 @@ jobs:
             - scss
 
   test-parallel:
-    executor: node-exec
+    executor: python-browsers
     parallelism: 4
     steps:
       - checkout
@@ -166,7 +167,7 @@ jobs:
           path: ./results.html
 
   parameterized-command:
-    executor: node-exec
+    executor: python-browsers
     resource_class: small
     steps:
       - say-hello:
@@ -175,7 +176,7 @@ jobs:
           subject: "Buddy"
 
   build-and-push-dockerhub:
-    executor: node-exec
+    executor: python-browsers
     steps:
       - attach_workspace:
           at: .
@@ -191,7 +192,7 @@ jobs:
             docker push ${DOCKER_TAG}
             docker push ${DOCKER_TAG}:${CIRCLE_SHA1}
 
-  deploy:
+  push-s3:
     docker:
       - image: cimg/python:3.6
     working_directory: *project_dir
